@@ -5,7 +5,7 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "declaration": true,
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": "./",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -16,6 +16,6 @@
     "jsx": "react-jsx",
     "types": ["node", "react"]
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "cli/**/*"],
   "exclude": ["node_modules", "dist"]
 }
