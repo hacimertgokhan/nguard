@@ -116,7 +116,7 @@ export class NguardServer {
       iat: now,
       exp: expiresAt,
       ...sessionData, // Spread all session data into payload
-    } as SessionPayload;
+    };
 
     // Apply JWT callbacks
     for (const callback of this.jwtCallbacks) {

@@ -14,7 +14,7 @@ import { Session } from './types';
 export type NguardMiddleware = (
   request: NextRequest,
   session: Session | null
-) => NextResponse | Promise<NextResponse> | void;
+) => NextResponse | Promise<NextResponse | void> | void;
 
 /**
  * Middleware configuration
@@ -29,18 +29,19 @@ export interface MiddlewareConfig {
  * Create a composable middleware chain
  * Works with next-intl and other middleware by returning NextResponse
  */
-export function createMiddlewareChain(config: MiddlewareConfig) {
+export function createMiddlewareChain(config: MiddlewareConfig): NguardMiddleware {
   return async (
     request: NextRequest,
     session: Session | null
-  ): Promise<NextResponse> => {
-    let response = NextResponse.next();
+  ) => {
+    let response: NextResponse | void = undefined;
 
     // Execute middleware in sequence
     for (const handler of config.handlers) {
       const result = await handler(request, session);
       if (result instanceof NextResponse) {
         response = result;
+        break; // Stop if middleware returns response
       }
     }
 
@@ -129,10 +130,10 @@ const rateLimitStore = new Map<string, number[]>();
 
 export const rateLimit = (config: RateLimitConfig): NguardMiddleware => {
   return (request: NextRequest, session: Session | null) => {
-    // Use user ID if authenticated, otherwise use IP
+    // Use user ID if authenticated, otherwise use IP from headers
     const identifier = session
       ? (session as any).id
-      : request.ip || 'unknown';
+      : request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
 
     const key = `rate-limit:${identifier}`;
     const now = Date.now();

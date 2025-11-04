@@ -37,11 +37,10 @@ export interface SessionOptions {
 }
 
 export interface SessionPayload {
+  [key: string]: any; // Flexible payload - matches flexible Session structure
   sessionId: string;
-  user: SessionUser;
   iat: number;
   exp: number;
-  data?: SessionData;
 }
 
 export type SessionCallback = (session: Session) => Promise<Session> | Session;
