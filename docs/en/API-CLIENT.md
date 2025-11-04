@@ -291,6 +291,42 @@ return NextResponse.json({ ok: true }, {
 
 ---
 
+### nguard.logout()
+
+Handle logout - clear session and call logout callbacks.
+
+**Parameters:**
+```typescript
+logout(session?: Session): Promise<string>
+```
+
+**Example:**
+```typescript
+import { nguard } from '@/lib/auth';
+
+export async function POST(request: NextRequest) {
+  const session = await nguard.validateSession(
+    request.headers.get('cookie') || ''
+  );
+
+  if (!session) {
+    return NextResponse.json(
+      { error: 'No session' },
+      { status: 401 }
+    );
+  }
+
+  // Handle logout with callbacks
+  const cookieHeader = await nguard.logout(session);
+
+  return NextResponse.json({ ok: true }, {
+    headers: { 'Set-Cookie': cookieHeader }
+  });
+}
+```
+
+---
+
 ### nguard.validateSession()
 
 Validate a session token from a cookie string.

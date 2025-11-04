@@ -291,6 +291,42 @@ return NextResponse.json({ ok: true }, {
 
 ---
 
+### nguard.logout()
+
+Çıkışı yönet - oturumu temizle ve logout callback'lerini çağır.
+
+**Parametreler:**
+```typescript
+logout(session?: Session): Promise<string>
+```
+
+**Örnek:**
+```typescript
+import { nguard } from '@/lib/auth';
+
+export async function POST(request: NextRequest) {
+  const session = await nguard.validateSession(
+    request.headers.get('cookie') || ''
+  );
+
+  if (!session) {
+    return NextResponse.json(
+      { error: 'Oturum yok' },
+      { status: 401 }
+    );
+  }
+
+  // Callback'ler ile çıkışı yönet
+  const cookieHeader = await nguard.logout(session);
+
+  return NextResponse.json({ ok: true }, {
+    headers: { 'Set-Cookie': cookieHeader }
+  });
+}
+```
+
+---
+
 ### nguard.validateSession()
 
 Bir cookie string'den oturum token'ını doğrula.

@@ -220,6 +220,21 @@ export class NguardServer {
   }
 
   /**
+   * Handle logout - clear session and call logout callbacks
+   */
+  async logout(session?: Session): Promise<string> {
+    // Call logout callbacks if session provided
+    if (session) {
+      for (const callback of this.logoutCallbacks) {
+        await callback(session as any);
+      }
+    }
+
+    // Return clear cookie header
+    return this.clearSession();
+  }
+
+  /**
    * Get cookie name
    */
   getCookieName(): string {

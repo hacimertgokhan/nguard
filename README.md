@@ -171,6 +171,15 @@ Clear the session
 const cookieHeader = nguard.clearSession();
 ```
 
+### logout()
+Handle logout with cleanup
+
+```typescript
+import { nguard } from '@/lib/auth';
+
+const cookieHeader = await nguard.logout(session);
+```
+
 ### validateSession()
 Validate a session token
 
