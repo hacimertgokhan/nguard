@@ -1,18 +1,12 @@
-<h1 align="center">
-  <img alt="Nguard" src="./docs/tr/logo.png" width="220" style="max-width: 100%;" />
-</h1>
+![Nguard Logo](./docs/tr/logo.png)
 
-<p align="center">
-  <strong>Next.js 16+ Session Management Library</strong><br/>
-  Zero-config authentication • JWT-based sessions • Works with any backend
-</p>
+# Nguard
 
-<p align="center">
-  <a href="#installation">Installation</a> •
-  <a href="#quick-start">Quick Start</a> •
-  <a href="#hooks">Hooks</a> •
-  <a href="#docs">Documentation</a>
-</p>
+**Next.js 16+ Session Management Library**
+
+Zero-config authentication • JWT-based sessions • Works with any backend
+
+[Installation](#installation) • [Quick Start](#quick-start) • [Hooks](#hooks) • [Docs](#docs)
 
 ---
 
@@ -269,7 +263,8 @@ MIT
 
 ---
 
-<p align="center">
-  <strong>Ready to get started?</strong><br/>
-  <code>npm install nguard && npx nguard-setup</code>
-</p>
+## Ready to get started?
+
+```bash
+npm install nguard && npx nguard-setup
+```
