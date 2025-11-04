@@ -12,105 +12,109 @@ A Next.js 16 compatible session management library with **callback-based authent
 - ✅ Works with any backend (Spring, Express, Node.js, etc.)
 - ✅ Next.js 16+ Support
 
-## Installation
+## Installation & Setup
+
+### Automatic Setup (Recommended)
 
 ```bash
+# 1. Install package
 npm install nguard
+
+# 2. Run interactive setup wizard
+npx nguard-setup
 ```
 
-## Quick Example
+The wizard will automatically create:
+- ✅ `lib/auth.ts` - Server authentication utilities
+- ✅ API routes (`/api/auth/login`, `/api/auth/logout`, etc.)
+- ✅ `proxy.ts` - Next.js 16 middleware configuration
+- ✅ `.env.local` - Environment variables template
+- ✅ TypeScript path aliases
 
-### 1. Server Setup (lib/auth.ts)
-```typescript
-import { initializeServer, type ServerLoginCallback } from 'nguard/server';
+### Manual Setup
 
-export const nguard = initializeServer({
-  secret: process.env.NGUARD_SECRET!,
-});
+For detailed manual setup, see [CLI-QUICK-START.md](./CLI-QUICK-START.md)
 
-// Callback: Authenticate user
-const handleServerLogin: ServerLoginCallback = async (creds) => {
-  const user = await db.user.findUnique({
-    where: { email: creds.email }
-  });
-  if (!user || !verifyPassword(creds.password, user.passwordHash)) {
-    throw new Error('Invalid credentials');
-  }
-  return { user, data: { role: user.role } };
-};
+## Quick Example (After Setup)
 
-nguard.onServerLogin(handleServerLogin);
+### 1. Configure Environment
+```bash
+cp .env.local.example .env.local
+# Edit with your BACKEND_API_URL and generated NGUARD_SECRET
 ```
 
-### 2. API Routes
-```typescript
-// app/api/auth/login/route.ts
-export async function POST(request: Request) {
-  const { email, password } = await request.json();
-  const { session, setCookieHeader } = await nguard.createSession(
-    { id: email, email, name: 'User' },
-    { role: 'user' }
-  );
-  return Response.json({ session }, {
-    headers: { 'Set-Cookie': setCookieHeader }
-  });
-}
-```
-
-### 3. Client Setup (app/layout.tsx)
+### 2. Client Setup (app/layout.tsx)
 ```typescript
 'use client';
 
-import { SessionProvider, type LoginCallback } from 'nguard/client';
-
-const handleLogin: LoginCallback = async (creds) => {
-  const res = await fetch('/api/auth/login', {
-    method: 'POST',
-    body: JSON.stringify(creds),
-  });
-  return await res.json();
-};
+import { SessionProvider } from 'nguard/client';
 
 export default function RootLayout({ children }) {
   return (
-    <SessionProvider onLogin={handleLogin}>
-      {children}
-    </SessionProvider>
+    <html>
+      <body>
+        <SessionProvider>{children}</SessionProvider>
+      </body>
+    </html>
   );
 }
 ```
 
-### 4. Use in Components
+### 3. Server Component
+```typescript
+import { auth } from '@/lib/auth';
+
+export default async function Dashboard() {
+  const session = await auth();
+
+  if (!session) {
+    return <div>Please log in</div>;
+  }
+
+  return <div>Welcome {session.email}</div>;
+}
+```
+
+### 4. Client Component
 ```typescript
 'use client';
 
-import { useAuth } from 'nguard/client';
+import { useSession, useLogin, useLogout } from 'nguard/client';
 
-export function Dashboard() {
-  const { user, isAuthenticated, login, logout } = useAuth();
+export function LoginForm() {
+  const { session } = useSession();
+  const { login, isLoading } = useLogin();
+  const { logout } = useLogout();
 
-  if (!isAuthenticated) {
+  if (session) {
     return (
-      <form onSubmit={async (e) => {
-        e.preventDefault();
-        const data = new FormData(e.currentTarget);
-        await login({
-          email: data.get('email'),
-          password: data.get('password'),
-        });
-      }}>
-        <input type="email" name="email" placeholder="Email" required />
-        <input type="password" name="password" placeholder="Password" required />
-        <button>Login</button>
-      </form>
+      <div>
+        <p>Logged in as {session.email}</p>
+        <button onClick={logout}>Logout</button>
+      </div>
     );
   }
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const response = await login({
+      email: formData.get('email'),
+      password: formData.get('password'),
+    });
+    if (response.session) {
+      // Success
+    }
+  };
+
   return (
-    <div>
-      <h1>Welcome, {user?.name}</h1>
-      <button onClick={logout}>Logout</button>
-    </div>
+    <form onSubmit={handleSubmit}>
+      <input type="email" name="email" placeholder="Email" required />
+      <input type="password" name="password" placeholder="Password" required />
+      <button disabled={isLoading}>
+        {isLoading ? 'Logging in...' : 'Login'}
+      </button>
+    </form>
   );
 }
 ```
@@ -138,17 +142,21 @@ export function Dashboard() {
 
 ## Documentation
 
-📖 **Full Documentation Available:**
+📖 **Getting Started:**
+- **[CLI Quick Start](./CLI-QUICK-START.md)** - 2-minute setup guide
+- **[CLI Setup Guide](./docs/en/CLI-SETUP.md)** - Complete interactive setup wizard guide
 
+📚 **Full Documentation:**
 - **[Turkish (Türkçe)](./docs/tr/)** - Kapsamlı Türkçe dokümantasyon
 - **[English](./docs/en/)** - Complete English documentation
 
-### Key Docs
-
-- [Quick Start (5 min)](./docs/tr/QUICKSTART.md)
-- [API Reference](./docs/tr/API-SERVER.md) and [Callbacks](./docs/tr/CALLBACKS.md)
-- [Real-world Examples](./docs/tr/EXAMPLES.md)
-- [Best Practices](./docs/tr/BEST-PRACTICES.md)
+### Key Documentation
+- [QUICKSTART](./docs/en/QUICKSTART.md) - Quick start guide
+- [CLI-SETUP](./docs/en/CLI-SETUP.md) - CLI Setup Wizard guide
+- [API Reference](./docs/en/API-CLIENT.md) - Client API reference
+- [Middleware Guide](./docs/en/MIDDLEWARE.md) - Middleware system
+- [Session Validation](./docs/en/VALIDATION.md) - Validation patterns
+- [SETUP-REFERENCE](./SETUP-REFERENCE.md) - Quick reference checklist
 
 ## Security
 
